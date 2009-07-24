@@ -15,7 +15,7 @@
 	<artifactId>jira-plugin-ext</artifactId>
 	<version>1.0-SNAPSHOT</version>
 
-	<name><!-- TODO: Add a name for your plugin --></name>
+	<name>BUNGE JIRA Plugin Extension</name>
 	<packaging>atlassian-plugin</packaging>
 
 	<properties>
@@ -42,14 +42,23 @@
 	-->
 
 	<!-- TODO: Complete developer details -->
-	<!--
 		<developers>
-		<developer>
-		<name>John Smith</name>
-		<organization>Example Company</organization>
-		</developer>
+			<developer>
+				<name>Cristian Nuñez Rebolledo</name>
+				<organization>Mindpool</organization>
+				<email>cristian@mindpool-it.com</email>
+			</developer>
+			<developer>
+				<name>Mariano Capurro</name>
+				<organization>Mindpool</organization>
+				<email>mariano@mindpool-it.com</email>
+			</developer>
+			<developer>
+				<name>Federico Barrera Oro</name>
+				<organization>Mindpool</organization>
+				<email>federico@mindpool-it.com</email>
+			</developer>
 		</developers>
-	-->
 
 	<!-- TODO: Complete source control details -->
 	<!--
