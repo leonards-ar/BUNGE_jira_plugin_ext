@@ -1,0 +1,4 @@
+<tr bgcolor=ffffff>
+	<td align="right" valign="top" bgcolor="fffff0"><span class="label">Dump File Path:</span></td>
+	<td bgcolor="ffffff" nowrap><input type="text" name="dumpFilePath" value=""/><br><font size="1">Full path to the file where the data will be dumped.</font></td>
+</tr>
