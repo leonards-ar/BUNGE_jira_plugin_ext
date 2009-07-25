@@ -1,10 +1,40 @@
-<atlassian-plugin key="${project.groupId}.${project.artifactId}" name="${project.name}">
-    <plugin-info>
-        <description>${project.description}</description>
-        <version>${project.version}</version>
-        <!-- TODO: Add vendor details -->
-        <!--
-        <vendor name="Example Company" url="http://www.example.com"/>
-        -->
-    </plugin-info>
+<atlassian-plugin key="${project.groupId}.${project.artifactId}"
+	name="${project.name}">
+	<plugin-info>
+		<description>${project.description}</description>
+		<version>${project.version}</version>
+		<vendor name="BUNGE Argentina" url="http://www.bungeargentina.com.ar"/>
+		<version>1.0</version>
+		<application-version min="3.0" max="3.13"/>		
+	</plugin-info>
+
+	<workflow-function key="dump_data-function" name="BUNGE Data Dumper" class="ar.com.bunge.jira.plugin.workflow.dump.DumpDataFunctionPluginFactory">
+		<description>
+			Dumps all the data received by the Post Function.
+		</description>
+		<function-class>
+			ar.com.bunge.jira.plugin.workflow.dump.DumpDataFunction
+		</function-class>
+		<orderable>true</orderable>
+		<unique>false</unique>
+		<deletable>true</deletable>
+		<default>false</default>
+		<resource type="velocity" name="view" location="dump_data-function-view.vm" />
+		<resource type="velocity" name="input-parameters" location="dump_data-function-input-params.vm" />
+	</workflow-function>
+
+	<workflow-function key="sap_ws_client-function" name="BUNGE SAP Web Service Client" class="ar.com.bunge.jira.plugin.workflow.sapws.SAPWebServiceClientFunctionPluginFactory">
+		<description>
+			Calls SAP Web Services on custom workflow transitions.
+		</description>
+		<function-class>
+			ar.com.bunge.jira.plugin.workflow.sapws.SAPWebServiceClientFunction
+		</function-class>
+		<orderable>true</orderable>
+		<unique>false</unique>
+		<deletable>true</deletable>
+		<default>false</default>
+		<resource type="velocity" name="view" location="sap_ws_client-function-view.vm" />
+		<resource type="velocity" name="input-parameters" location="sap_ws_client-function-input-params.vm" />
+	</workflow-function>
 </atlassian-plugin>
