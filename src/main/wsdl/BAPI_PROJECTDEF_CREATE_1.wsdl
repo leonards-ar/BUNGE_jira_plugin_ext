@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+  <wsdl:definitions targetNamespace="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:n0="urn:sap-com:document:sap:rfc:functions" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:sap-com:document:sap:soap:functions:mc-style" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:types>
+  <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="urn:sap-com:document:sap:rfc:functions" targetNamespace="urn:sap-com:document:sap:rfc:functions" elementFormDefault="unqualified" attributeFormDefault="qualified">
+  <xsd:simpleType name="char1">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="1" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char10">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="10" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char12">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="12" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char15">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="15" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char16">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="16" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char2">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="2" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char20">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="20" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char220">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="220" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char24">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="24" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char3">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="3" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char32">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="32" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char4">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="4" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char40">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="40" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char5">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="5" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char50">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="50" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char6">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="6" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char7">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="7" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char72">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="72" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="char90">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="90" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="cuky5">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="5" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="date">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="10" /> 
+  <xsd:pattern value="\d\d\d\d-\d\d-\d\d" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="numeric1">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="1" /> 
+  <xsd:pattern value="\d*" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="numeric3">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="3" /> 
+  <xsd:pattern value="\d*" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="numeric6">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="6" /> 
+  <xsd:pattern value="\d*" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="numeric8">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="8" /> 
+  <xsd:pattern value="\d*" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="unit3">
+  <xsd:restriction base="xsd:string">
+  <xsd:maxLength value="3" /> 
+  </xsd:restriction>
+  </xsd:simpleType>
+  </xsd:schema>
+  <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="urn:sap-com:document:sap:soap:functions:mc-style" targetNamespace="urn:sap-com:document:sap:soap:functions:mc-style" elementFormDefault="unqualified" attributeFormDefault="qualified" xmlns:n0="urn:sap-com:document:sap:rfc:functions">
+  <xsd:import namespace="urn:sap-com:document:sap:rfc:functions" /> 
+  <xsd:complexType name="ProjectDefinition">
+  <xsd:sequence>
+  <xsd:element name="ProjectDefinition" type="n0:char24" /> 
+  <xsd:element name="Description" type="n0:char40" /> 
+  <xsd:element name="MaskId" type="n0:char24" /> 
+  <xsd:element name="ResponsibleNo" type="n0:numeric8" /> 
+  <xsd:element name="ApplicantNo" type="n0:numeric8" /> 
+  <xsd:element name="CompCode" type="n0:char4" /> 
+  <xsd:element name="BusArea" type="n0:char4" /> 
+  <xsd:element name="ControllingArea" type="n0:char4" /> 
+  <xsd:element name="ProfitCtr" type="n0:char10" /> 
+  <xsd:element name="ProjectCurrency" type="n0:cuky5" /> 
+  <xsd:element name="ProjectCurrencyIso" type="n0:char3" /> 
+  <xsd:element name="NetworkAssignment" type="n0:numeric1" /> 
+  <xsd:element name="Start" type="n0:date" /> 
+  <xsd:element name="Finish" type="n0:date" /> 
+  <xsd:element name="Plant" type="n0:char4" /> 
+  <xsd:element name="Calendar" type="n0:char2" /> 
+  <xsd:element name="PlanBasic" type="n0:numeric1" /> 
+  <xsd:element name="PlanFcst" type="n0:numeric1" /> 
+  <xsd:element name="TimeUnit" type="n0:unit3" /> 
+  <xsd:element name="TimeUnitIso" type="n0:char3" /> 
+  <xsd:element name="NetworkProfile" type="n0:char7" /> 
+  <xsd:element name="ProjectProfile" type="n0:char7" /> 
+  <xsd:element name="BudgetProfile" type="n0:char6" /> 
+  <xsd:element name="ProjectStock" type="n0:char1" /> 
+  <xsd:element name="Objectclass" type="n0:char2" /> 
+  <xsd:element name="Statistical" type="n0:char1" /> 
+  <xsd:element name="Taxjurcode" type="n0:char15" /> 
+  <xsd:element name="IntProfile" type="n0:char7" /> 
+  <xsd:element name="WbsSchedProfile" type="n0:char12" /> 
+  <xsd:element name="CshBdgtProfile" type="n0:char6" /> 
+  <xsd:element name="PlanProfile" type="n0:char6" /> 
+  <xsd:element name="JointVenture" type="n0:char6" /> 
+  <xsd:element name="RecoveryInd" type="n0:char2" /> 
+  <xsd:element name="EquityType" type="n0:char3" /> 
+  <xsd:element name="JvObjectType" type="n0:char4" /> 
+  <xsd:element name="JvJibClass" type="n0:char3" /> 
+  <xsd:element name="JvJibSubClassA" type="n0:char5" /> 
+  <xsd:element name="ObjectclassExt" type="n0:char5" /> 
+  <xsd:element name="FuncArea" type="n0:char4" /> 
+  <xsd:element name="FuncAreaLong" type="n0:char16" /> 
+  </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="MethMessage">
+  <xsd:sequence>
+  <xsd:element name="Method" type="n0:char32" /> 
+  <xsd:element name="ObjectType" type="n0:char32" /> 
+  <xsd:element name="InternalObjectId" type="n0:char90" /> 
+  <xsd:element name="ExternalObjectId" type="n0:char90" /> 
+  <xsd:element name="MessageId" type="n0:char20" /> 
+  <xsd:element name="MessageNumber" type="n0:char3" /> 
+  <xsd:element name="MessageType" type="n0:char1" /> 
+  <xsd:element name="MessageText" type="n0:char72" /> 
+  </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="Bapireturn1">
+  <xsd:sequence>
+  <xsd:element name="Type" type="n0:char1" /> 
+  <xsd:element name="Id" type="n0:char20" /> 
+  <xsd:element name="Number" type="n0:numeric3" /> 
+  <xsd:element name="Message" type="n0:char220" /> 
+  <xsd:element name="LogNo" type="n0:char20" /> 
+  <xsd:element name="LogMsgNo" type="n0:numeric6" /> 
+  <xsd:element name="MessageV1" type="n0:char50" /> 
+  <xsd:element name="MessageV2" type="n0:char50" /> 
+  <xsd:element name="MessageV3" type="n0:char50" /> 
+  <xsd:element name="MessageV4" type="n0:char50" /> 
+  </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="TableOfbapiMethMessage">
+  <xsd:sequence>
+  <xsd:element name="item" minOccurs="0" maxOccurs="unbounded" type="tns:MethMessage" /> 
+  </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="ProjectDefinitionCreateFromData">
+  <xsd:complexType>
+  <xsd:sequence>
+  <xsd:element name="ProjectDefinitionStr" type="tns:ProjectDefinition" /> 
+  </xsd:sequence>
+  </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="ProjectDefinitionCreateFromDataResponse">
+  <xsd:complexType>
+  <xsd:sequence>
+  <xsd:element name="EMessageTable" type="tns:TableOfbapiMethMessage" /> 
+  <xsd:element name="Return" type="tns:Bapireturn1" /> 
+  </xsd:sequence>
+  </xsd:complexType>
+  </xsd:element>
+  </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="ProjectDefinitionCreateFromData">
+  <wsdl:part name="parameters" element="tns:ProjectDefinitionCreateFromData" /> 
+  </wsdl:message>
+  <wsdl:message name="ProjectDefinitionCreateFromDataResponse">
+  <wsdl:part name="parameters" element="tns:ProjectDefinitionCreateFromDataResponse" /> 
+  </wsdl:message>
+  <wsdl:portType name="BAPI_PROJECTDEF_CREATE_1">
+  <wsdl:operation name="ProjectDefinitionCreateFromData">
+  <wsdl:input message="tns:ProjectDefinitionCreateFromData" /> 
+  <wsdl:output message="tns:ProjectDefinitionCreateFromDataResponse" /> 
+  </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="BAPI_PROJECTDEF_CREATE_1SoapBinding" type="tns:BAPI_PROJECTDEF_CREATE_1">
+  <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" /> 
+  <wsdl:operation name="ProjectDefinitionCreateFromData">
+  <soap:operation soapAction="" /> 
+  <wsdl:input>
+  <soap:body use="literal" /> 
+  </wsdl:input>
+  <wsdl:output>
+  <soap:body use="literal" /> 
+  </wsdl:output>
+  </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="BAPI_PROJECTDEF_CREATE_1Service">
+  <wsdl:port name="BAPI_PROJECTDEF_CREATE_1SoapBinding" binding="tns:BAPI_PROJECTDEF_CREATE_1SoapBinding">
+  <soap:address location="http://bungesap01.bar.sa.dir.bunge.com:8000/sap/bc/srt/rfc/sap/BAPI_PROJECTDEF_CREATE_1?sap-client=230" /> 
+  </wsdl:port>
+  </wsdl:service>
+  </wsdl:definitions>
