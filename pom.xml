@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
 	<parent>
 		<groupId>com.atlassian.jira.plugins</groupId>
@@ -16,7 +13,9 @@
 	<version>1.0-SNAPSHOT</version>
 
 	<name>BUNGE JIRA Plugin Extension</name>
-	<description>BUNGE JIRA Plugin Extension developed for SAP integration</description>
+	<description>
+		BUNGE JIRA Plugin Extension developed for SAP integration
+	</description>
 	<packaging>atlassian-plugin</packaging>
 
 	<properties>
@@ -43,23 +42,23 @@
 	-->
 
 	<!-- TODO: Complete developer details -->
-		<developers>
-			<developer>
-				<name>Cristian Nuñez Rebolledo</name>
-				<organization>Mindpool</organization>
-				<email>cristian@mindpool-it.com</email>
-			</developer>
-			<developer>
-				<name>Mariano Capurro</name>
-				<organization>Mindpool</organization>
-				<email>mariano@mindpool-it.com</email>
-			</developer>
-			<developer>
-				<name>Federico Barrera Oro</name>
-				<organization>Mindpool</organization>
-				<email>federico@mindpool-it.com</email>
-			</developer>
-		</developers>
+	<developers>
+		<developer>
+			<name>Cristian Nuñez Rebolledo</name>
+			<organization>Mindpool</organization>
+			<email>cristian@mindpool-it.com</email>
+		</developer>
+		<developer>
+			<name>Mariano Capurro</name>
+			<organization>Mindpool</organization>
+			<email>mariano@mindpool-it.com</email>
+		</developer>
+		<developer>
+			<name>Federico Barrera Oro</name>
+			<organization>Mindpool</organization>
+			<email>federico@mindpool-it.com</email>
+		</developer>
+	</developers>
 
 	<!-- TODO: Complete source control details -->
 	<!--
