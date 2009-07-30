@@ -6,7 +6,6 @@
 package ar.com.bunge.jira.plugin.workflow.dump;
 
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
@@ -90,9 +89,9 @@ public class DumpDataFunction implements FunctionProvider {
     		if(LOG.isDebugEnabled()) {
     			LOG.debug("Finished dumping data");
     		}
-    	} catch(IOException ex) {
+    	} catch(Throwable ex) {
     		LOG.error("Could not dump function data to file [" + dumpFilePath + "]", ex);
-    	    throw new WorkflowException("Could not dump function data to file [" + dumpFilePath + "]", ex);
+    	    throw new WorkflowException("Could not dump function data to file [" + dumpFilePath + "]. (" + ex.getClass() + ")", ex);
     	} finally {
     	    if( dumpFileStream != null ) {
     	        try {
@@ -131,7 +130,11 @@ public class DumpDataFunction implements FunctionProvider {
 				aValue = i.get(aKey);
 				s.append(aKey.getClass().getName() + ":[" + aKey + "]");
 				s.append(" = ");
-				s.append(aValue.getClass().getName() + ":[" + aValue + "]");
+				if(aValue != null) {
+					s.append(aValue.getClass().getName() + ":[" + aValue + "]");
+				} else {
+					s.append("[null]");
+				}
 				if(it.hasNext()) {
 					s.append(",\n\t");
 				}
