@@ -12,7 +12,9 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.ofbiz.core.entity.GenericValue;
 
+import com.atlassian.jira.issue.MutableIssue;
 import com.opensymphony.module.propertyset.PropertySet;
 import com.opensymphony.workflow.FunctionProvider;
 import com.opensymphony.workflow.WorkflowException;
@@ -64,6 +66,12 @@ public class DumpDataFunction implements FunctionProvider {
     		}
     		dumpFileStream.write(dumpMap("transientVars", transientVars).getBytes());
     		dumpFileStream.write("\n".getBytes());
+
+    		if(LOG.isDebugEnabled()) {
+        		LOG.debug(dumpIssue("issue", transientVars.get("issue")));
+    		}
+    		dumpFileStream.write(dumpIssue("issue", transientVars.get("issue")).getBytes());
+    		dumpFileStream.write("\n".getBytes());
     		
     		if(LOG.isDebugEnabled()) {
         		LOG.debug(dumpMap("args", args));
@@ -96,6 +104,45 @@ public class DumpDataFunction implements FunctionProvider {
     	}		
 	}
 
+	/**
+	 * 
+	 * @param description
+	 * @param issue
+	 * @return
+	 */
+	private String dumpIssue(String description, Object issue) {
+		StringBuffer s = new StringBuffer(description + ": {");
+		GenericValue i = null;
+		
+		if(issue instanceof MutableIssue) {
+			i = ((MutableIssue) issue).getGenericValue();
+		} else if(issue instanceof GenericValue) {
+			i = (GenericValue) issue;
+		} else if(issue == null) {
+			s.append("Null issue");
+		} else {
+			s.append("Issue class [" + issue.getClass() + "] -> " + i);
+		}
+		
+		if(i != null) {
+			Object aKey, aValue;
+			for(Iterator it = i.getAllKeys().iterator(); it.hasNext(); ) {
+				aKey = it.next();
+				aValue = i.get(aKey);
+				s.append(aKey.getClass().getName() + ":[" + aKey + "]");
+				s.append(" = ");
+				s.append(aValue.getClass().getName() + ":[" + aValue + "]");
+				if(it.hasNext()) {
+					s.append(",\n\t");
+				}
+			}
+			
+		}
+		
+		s.append("}");
+		return s.toString();
+	}
+		
 	/**
 	 * 
 	 * @param description
