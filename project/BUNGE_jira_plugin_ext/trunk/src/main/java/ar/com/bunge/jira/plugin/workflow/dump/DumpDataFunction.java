@@ -8,12 +8,16 @@ package ar.com.bunge.jira.plugin.workflow.dump;
 import java.io.FileOutputStream;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.ofbiz.core.entity.GenericValue;
 
-import com.atlassian.jira.issue.MutableIssue;
+import com.atlassian.jira.ManagerFactory;
+import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.issue.fields.CustomField;
+import com.atlassian.jira.project.Project;
 import com.opensymphony.module.propertyset.PropertySet;
 import com.opensymphony.workflow.FunctionProvider;
 import com.opensymphony.workflow.WorkflowException;
@@ -100,7 +104,7 @@ public class DumpDataFunction implements FunctionProvider {
     	        	LOG.error("Could not close file stream for file [" + dumpFilePath + "]", ex);
     	        }
     	    }		
-    	}		
+    	}
 	}
 
 	/**
@@ -113,8 +117,28 @@ public class DumpDataFunction implements FunctionProvider {
 		StringBuffer s = new StringBuffer(description + ": {");
 		GenericValue i = null;
 		
-		if(issue instanceof MutableIssue) {
-			i = ((MutableIssue) issue).getGenericValue();
+		if(issue instanceof Issue) {
+			Issue io = (Issue) issue;
+			List customFieldObjs = ManagerFactory.getCustomFieldManager().getCustomFieldObjects(io);
+			s.append("customFields: [");
+			if(customFieldObjs != null) {
+				CustomField cf;
+				for(Iterator it = customFieldObjs.iterator(); it.hasNext(); ) {
+					cf = (CustomField) it.next();
+					s.append(cf.getName() + ": ");
+					s.append(cf.getValue(io) + " (");
+					s.append(cf.getCustomFieldType().getKey() + " / " + cf.getCustomFieldType().getName());
+					s.append(")");
+					if(it.hasNext()) {
+						s.append(", ");
+					}
+					
+				}
+			}
+			s.append("]");
+			
+			Project p = io.getProjectObject();
+			
 		} else if(issue instanceof GenericValue) {
 			i = (GenericValue) issue;
 		} else if(issue == null) {
