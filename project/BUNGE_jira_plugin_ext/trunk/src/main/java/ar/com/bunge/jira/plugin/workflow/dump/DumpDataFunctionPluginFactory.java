@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.atlassian.jira.issue.fields.FieldManager;
 import com.atlassian.jira.plugin.workflow.AbstractWorkflowPluginFactory;
 import com.atlassian.jira.plugin.workflow.WorkflowPluginFunctionFactory;
 import com.opensymphony.workflow.loader.AbstractDescriptor;
@@ -22,15 +23,17 @@ import com.opensymphony.workflow.loader.FunctionDescriptor;
  * @since SPM 1.0
  *
  */
+@SuppressWarnings("unchecked")
 public class DumpDataFunctionPluginFactory extends AbstractWorkflowPluginFactory implements WorkflowPluginFunctionFactory {
 	private static final Logger LOG = Logger.getLogger(DumpDataFunctionPluginFactory.class);	
 
 	/**
 	 * 
+	 * @param fieldManager
 	 */
-	public DumpDataFunctionPluginFactory() {
+	public DumpDataFunctionPluginFactory(FieldManager fieldManager) {
 		if(LOG.isDebugEnabled()) {
-			LOG.debug("Called default DumpDataFunctionPluginFactory constructor");
+			LOG.debug("Called DumpDataFunctionPluginFactory constructor with fieldManager");
 		}
 	}
 
