@@ -64,13 +64,14 @@ public class SAPWebServiceClientFunction extends AbstractPreserveChangesPostFunc
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Trying to set status field [" + statusFieldName + "] with value [" + status + "]");
 		}
-		setFieldValue(transientVars, statusFieldName, status, changeHolder);
+		setFieldValue(transientVars, statusFieldName, (status != null ? status.substring(0, 255) : ""), changeHolder);
 		
 		String messageFieldName = getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.JIRA_MESSAGE_FIELD_PARAM);
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Trying to set message field [" + messageFieldName + "] with value [" + message + "]");
 		}
-		setFieldValue(transientVars, messageFieldName, message, changeHolder);
+		
+		setFieldValue(transientVars, messageFieldName, (message != null ? message.substring(0, 255) : ""), changeHolder);
 	}
 	
 	/**
