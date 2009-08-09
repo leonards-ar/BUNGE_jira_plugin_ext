@@ -29,6 +29,7 @@ import com.opensymphony.workflow.WorkflowException;
  * @since SPM 1.0
  *
  */
+@SuppressWarnings("unchecked")
 public class DumpDataFunction implements FunctionProvider {
 	private static final Logger LOG = Logger.getLogger(DumpDataFunction.class);	
 
