@@ -16,16 +16,19 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.ofbiz.core.entity.GenericValue;
 
+import ar.com.bunge.jira.plugin.workflow.AbstractPreserveChangesPostFunction;
+import ar.com.bunge.jira.plugin.workflow.utils.WorkflowUtils;
 import ar.com.bunge.sapws.client.SAPClientXmlRequest;
 import ar.com.bunge.sapws.client.SAPClientXmlResponse;
 import ar.com.bunge.sapws.client.SAPWSClient;
 
 import com.atlassian.jira.ManagerFactory;
 import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.issue.customfields.CustomFieldType;
 import com.atlassian.jira.issue.fields.CustomField;
+import com.atlassian.jira.issue.util.IssueChangeHolder;
 import com.opensymphony.module.propertyset.PropertySet;
-import com.opensymphony.workflow.FunctionProvider;
 import com.opensymphony.workflow.WorkflowException;
 
 /**
@@ -36,7 +39,7 @@ import com.opensymphony.workflow.WorkflowException;
  *
  */
 @SuppressWarnings("unchecked")
-public class SAPWebServiceClientFunction implements FunctionProvider {
+public class SAPWebServiceClientFunction extends AbstractPreserveChangesPostFunction {
 	public static final String ISSUE_NAMESPACE = "issue";
 	public static final String ISSUE_CUSTOM_TYPE_NAMESPACE = ISSUE_NAMESPACE + ".custom";
 	
@@ -49,88 +52,43 @@ public class SAPWebServiceClientFunction implements FunctionProvider {
 	}
 
 	/**
-	 * @param transientVars
-	 * @param args
-	 * @param ps
-	 * @throws WorkflowException
-	 * @see com.opensymphony.workflow.FunctionProvider#execute(java.util.Map, java.util.Map, com.opensymphony.module.propertyset.PropertySet)
-	 */
-	public void execute(Map transientVars, Map args, PropertySet ps) throws WorkflowException {
-		if(LOG.isDebugEnabled()) {
-			LOG.debug(dumpMap("args", args));
-		}
-		boolean throwExceptions = getArgAsBoolean(args, SAPWebServiceClientFunctionPluginFactory.JIRA_THROW_EX_PARAM);
-
-		SAPClientXmlResponse response = null;
-		try {
-			Map<String, Object> context = buildContext(transientVars, args, ps);
-			if(LOG.isDebugEnabled()) {
-				LOG.debug(dumpMap("context", context));
-			}
-
-			SAPWSClient client = createWSClient(args);
-
-			if(LOG.isDebugEnabled()) {
-				LOG.debug(client);
-			}
-
-			SAPClientXmlRequest request = new SAPClientXmlRequest(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.REQUEST_TEMPLATE_PARAM));
-
-			if(LOG.isDebugEnabled()) {
-				LOG.debug(request);
-			}
-			
-			response = client.execute(request, context);
-
-			if(LOG.isDebugEnabled()) {
-				LOG.debug(response);
-			}
-			
-			setResponseStatusAndMessage(transientVars, args, response.getNumberAsString(), response.getMessage());
-			setCustomFieldValue(transientVars, getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.JIRA_RESPONSE_FIELD_PARAM), response.getResponse());
-		} catch(Exception ex) {
-			LOG.error("Could not execute web service: " + ex.getMessage(), ex);
-			setResponseStatusAndMessage(transientVars, args, "-1", ex.getMessage());
-			if(throwExceptions) {
-				throw new WorkflowException("Could not execute web service: " + ex.getMessage(), ex);
-			}
-		} finally {
-			if(response != null && !response.isSuccess() && throwExceptions) {
-				throw new WorkflowException(response.getMessage() + " (Number: " + response.getNumberAsString() + ")");
-			}
-		}
-	}
-
-	/**
 	 * 
 	 * @param transientVars
 	 * @param args
 	 * @param status
 	 * @param message
+	 * @param changeHolder
 	 */
-	private void setResponseStatusAndMessage(Map transientVars, Map args, String status, String message) {
+	private void setResponseStatusAndMessage(Map transientVars, Map args, String status, String message, IssueChangeHolder changeHolder) {
 		String statusFieldName = getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.JIRA_STATUS_FIELD_PARAM);
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Trying to set status field [" + statusFieldName + "] with value [" + status + "]");
 		}
-		setCustomFieldValue(transientVars, statusFieldName, status);
+		setFieldValue(transientVars, statusFieldName, status, changeHolder);
 		
 		String messageFieldName = getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.JIRA_MESSAGE_FIELD_PARAM);
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Trying to set message field [" + messageFieldName + "] with value [" + message + "]");
 		}
-		setCustomFieldValue(transientVars, messageFieldName, message);
+		setFieldValue(transientVars, messageFieldName, message, changeHolder);
 	}
 	
 	/**
 	 * 
 	 * @param transientVars
-	 * @param fieldName
+	 * @param fieldKey
 	 * @param fieldValue
+	 * @param changeHolder
 	 */
-	private void setCustomFieldValue(Map transientVars, String fieldName, String fieldValue) {
-		if(fieldName != null) {
-			
+	private void setFieldValue(Map transientVars, String fieldKey, String fieldValue, IssueChangeHolder changeHolder) {
+		
+		if(fieldKey != null) {
+	        try {
+				MutableIssue issue = (MutableIssue) transientVars.get("issue");
+				WorkflowUtils.setFieldValue(issue, fieldKey, fieldValue, changeHolder);
+	        } catch(Throwable ex) {
+	        	 LOG.error("Cannot set value [" + fieldValue + "] to field key [" + fieldKey + "]: " + ex, ex);
+	        }
 		} else {
 			LOG.info("Cannot set custom field value for a null field name.");
 		}
@@ -280,25 +238,89 @@ public class SAPWebServiceClientFunction implements FunctionProvider {
 	 * @return
 	 */
 	private String dumpMap(String description, Map map) {
-		if(map != null && map.size() > 0) {
-			Object aKey, aValue;
-			StringBuffer s = new StringBuffer(description + ": {");
-			for(Iterator it = map.keySet().iterator(); it.hasNext(); ) {
-				aKey = it.next();
-				aValue = map.get(aKey);
-				s.append(aKey.getClass().getName() + ":[" + aKey + "]");
-				s.append(" = ");
-				s.append(aValue.getClass().getName() + ":[" + aValue + "]");
-				if(it.hasNext()) {
-					s.append(",\n\t");
+		try {
+			if(map != null && map.size() > 0) {
+				Object aKey, aValue;
+				StringBuffer s = new StringBuffer(description + ": {");
+				for(Iterator it = map.keySet().iterator(); it.hasNext(); ) {
+					aKey = it.next();
+					aValue = map.get(aKey);
+					s.append(aKey.getClass().getName() + ":[" + aKey + "]");
+					s.append(" = ");
+					if(aValue != null) {
+						s.append(aValue.getClass().getName() + ":[" + aValue + "]");
+					} else {
+						s.append("[null]");
+					}
+					if(it.hasNext()) {
+						s.append(",\n\t");
+					}
 				}
+				s.append("}");
+				return s.toString();
+			} else if(map != null && map.size() <= 0) {
+				return description + ": Empty map";
+			} else {
+				return description + ": Null map";
+			}		
+		} catch(Throwable ex) {
+			LOG.error("Cannot dump map [" + description + "]", ex);
+			return "Cannot dump map [" + description + "] -> " + ex.getLocalizedMessage();
+		}
+	}
+
+	/**
+	 * 
+	 * @param transientVars
+	 * @param args
+	 * @param ps
+	 * @param holder
+	 * @throws WorkflowException
+	 * @see ar.com.bunge.jira.plugin.workflow.AbstractPreserveChangesPostFunction#executeFunction(java.util.Map, java.util.Map, com.opensymphony.module.propertyset.PropertySet, com.atlassian.jira.issue.util.IssueChangeHolder)
+	 */
+	protected void executeFunction(Map<String, Object> transientVars, Map<String, String> args, PropertySet ps, IssueChangeHolder holder) throws WorkflowException {
+		if(LOG.isDebugEnabled()) {
+			LOG.debug(dumpMap("args", args));
+		}
+		boolean throwExceptions = getArgAsBoolean(args, SAPWebServiceClientFunctionPluginFactory.JIRA_THROW_EX_PARAM);
+
+		SAPClientXmlResponse response = null;
+		try {
+			Map<String, Object> context = buildContext(transientVars, args, ps);
+			if(LOG.isDebugEnabled()) {
+				LOG.debug(dumpMap("context", context));
 			}
-			s.append("}");
-			return s.toString();
-		} else if(map != null && map.size() <= 0) {
-			return description + ": Empty map";
-		} else {
-			return description + ": Null map";
-		}		
+
+			SAPWSClient client = createWSClient(args);
+
+			if(LOG.isDebugEnabled()) {
+				LOG.debug(client);
+			}
+
+			SAPClientXmlRequest request = new SAPClientXmlRequest(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.REQUEST_TEMPLATE_PARAM));
+
+			if(LOG.isDebugEnabled()) {
+				LOG.debug(request);
+			}
+			
+			response = client.execute(request, context);
+
+			if(LOG.isDebugEnabled()) {
+				LOG.debug(response);
+			}
+			
+			setResponseStatusAndMessage(transientVars, args, response.getNumberAsString(), response.getMessage(), holder);
+			setFieldValue(transientVars, getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.JIRA_RESPONSE_FIELD_PARAM), response.getResponse(), holder);
+		} catch(Exception ex) {
+			LOG.error("Could not execute web service: " + ex.getMessage(), ex);
+			setResponseStatusAndMessage(transientVars, args, "-1", ex.getMessage(), holder);
+			if(throwExceptions) {
+				throw new WorkflowException("Could not execute web service: " + ex.getMessage(), ex);
+			}
+		} finally {
+			if(response != null && !response.isSuccess() && throwExceptions) {
+				throw new WorkflowException(response.getMessage() + " (Number: " + response.getNumberAsString() + ")");
+			}
+		}
 	}
 }

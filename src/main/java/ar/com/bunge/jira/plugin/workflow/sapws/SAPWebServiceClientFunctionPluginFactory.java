@@ -5,11 +5,17 @@
  */
 package ar.com.bunge.jira.plugin.workflow.sapws;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import ar.com.bunge.jira.plugin.workflow.utils.PluginUtils;
+import ar.com.bunge.jira.plugin.workflow.utils.WorkflowUtils;
+
+import com.atlassian.jira.issue.fields.Field;
 import com.atlassian.jira.issue.fields.FieldManager;
 import com.atlassian.jira.plugin.workflow.AbstractWorkflowPluginFactory;
 import com.atlassian.jira.plugin.workflow.WorkflowPluginFunctionFactory;
@@ -54,7 +60,32 @@ public class SAPWebServiceClientFunctionPluginFactory extends AbstractWorkflowPl
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Called getVelocityParamsForEdit method with parameters velocityParams " + velocityParams + " and descriptor " + (descriptor != null ? descriptor.getClass() : null) + " [" + descriptor + "]");
 		}
-		
+        if (!(descriptor instanceof FunctionDescriptor)) {
+        	String msg = "Descriptor must be an instance of com.opensymphony.workflow.loader.FunctionDescriptor and it is an instance of " + (descriptor != null ? descriptor.getClass() : null);
+        	LOG.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
+        FunctionDescriptor functionDescriptor = (FunctionDescriptor) descriptor;
+        if(LOG.isDebugEnabled()) {
+        	LOG.debug("Function descriptor args " + functionDescriptor.getArgs());
+        }
+        
+        velocityParams.put("requestTemplate", functionDescriptor.getArgs().get(REQUEST_TEMPLATE_PARAM));
+        velocityParams.put("url", functionDescriptor.getArgs().get(WS_URL_PARAM));
+        velocityParams.put("username", functionDescriptor.getArgs().get(WS_USERNAME_PARAM));
+        velocityParams.put("password", functionDescriptor.getArgs().get(WS_PASSWORD_PARAM));
+        velocityParams.put("basicAuthentication", functionDescriptor.getArgs().get(WS_BASIC_AUTHENTICATION_PARAM));
+        velocityParams.put("responseField", getFieldByName(descriptor, JIRA_THROW_EX_PARAM));
+        velocityParams.put("statusField", getFieldByName(descriptor, JIRA_STATUS_FIELD_PARAM));
+        velocityParams.put("messageField", getFieldByName(descriptor, JIRA_MESSAGE_FIELD_PARAM));
+        velocityParams.put("throwException", functionDescriptor.getArgs().get(JIRA_THROW_EX_PARAM));		
+
+        List<Field> fields = PluginUtils.getCopyToFields();
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Available fields: " + fields);
+		}
+		velocityParams.put("fieldList", Collections.unmodifiableList(fields));        
 	}
 
 	/**
@@ -65,6 +96,11 @@ public class SAPWebServiceClientFunctionPluginFactory extends AbstractWorkflowPl
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Called getVelocityParamsForInput method with parameters velocityParams " + velocityParams);
 		}		
+		List<Field> fields = PluginUtils.getCopyToFields();
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Available fields: " + fields);
+		}
+		velocityParams.put("fieldList", Collections.unmodifiableList(fields));
 	}
 
 	/**
@@ -86,18 +122,9 @@ public class SAPWebServiceClientFunctionPluginFactory extends AbstractWorkflowPl
         FunctionDescriptor functionDescriptor = (FunctionDescriptor) descriptor;
         if(LOG.isDebugEnabled()) {
         	LOG.debug("Function descriptor args " + functionDescriptor.getArgs());
-        	LOG.debug("Setting velocityParam [dumpFilePath] with arg [field.dumpFilePath] and value [" + functionDescriptor.getArgs().get("field.dumpFilePath") + "]");
         }
         
-        velocityParams.put("requestTemplate", functionDescriptor.getArgs().get(REQUEST_TEMPLATE_PARAM));
         velocityParams.put("url", functionDescriptor.getArgs().get(WS_URL_PARAM));
-        velocityParams.put("username", functionDescriptor.getArgs().get(WS_USERNAME_PARAM));
-        velocityParams.put("password", functionDescriptor.getArgs().get(WS_PASSWORD_PARAM));
-        velocityParams.put("basicAuthentication", functionDescriptor.getArgs().get(WS_BASIC_AUTHENTICATION_PARAM));
-        velocityParams.put("responseField", functionDescriptor.getArgs().get(JIRA_RESPONSE_FIELD_PARAM));
-        velocityParams.put("statusField", functionDescriptor.getArgs().get(JIRA_STATUS_FIELD_PARAM));
-        velocityParams.put("messageField", functionDescriptor.getArgs().get(JIRA_MESSAGE_FIELD_PARAM));
-        velocityParams.put("throwException", functionDescriptor.getArgs().get(JIRA_THROW_EX_PARAM));
 	}
 
 	/**
@@ -132,10 +159,33 @@ public class SAPWebServiceClientFunctionPluginFactory extends AbstractWorkflowPl
 	 * @param conditionParams
 	 */
 	private void addParameterFromConditionParams(String paramFieldName, String conditionParamFieldName, Map params, Map conditionParams) {
-        String value = extractSingleParam(conditionParams, conditionParamFieldName);
-        if(LOG.isDebugEnabled()) {
-        	LOG.debug("Setting descriptor param [" + paramFieldName + "] with condition param [" + conditionParamFieldName + "] and value [" + value + "]");
-        }
-        params.put(paramFieldName, value);
+		try {
+			String value = extractSingleParam(conditionParams, conditionParamFieldName);
+	        if(LOG.isDebugEnabled()) {
+	        	LOG.debug("Setting descriptor param [" + paramFieldName + "] with condition param [" + conditionParamFieldName + "] and value [" + value + "]");
+	        }
+	        params.put(paramFieldName, value);
+		} catch(IllegalArgumentException ex) {
+			LOG.warn(ex.getLocalizedMessage(), ex);
+		}
 	}
+	
+	/**
+	 * 
+	 * @param descriptor
+	 * @param name
+	 * @return
+	 */
+	private Field getFieldByName(AbstractDescriptor descriptor, String name) { 
+		try {
+			FunctionDescriptor functionDescriptor = (FunctionDescriptor) descriptor;
+			Map args = functionDescriptor.getArgs();
+			String fieldKey = (String) args.get(name);
+
+			return (Field) WorkflowUtils.getFieldFromKey(fieldKey);
+		} catch(IllegalArgumentException ex) {
+			LOG.info(ex.getLocalizedMessage());
+			return null;
+		}
+	}	
 }
