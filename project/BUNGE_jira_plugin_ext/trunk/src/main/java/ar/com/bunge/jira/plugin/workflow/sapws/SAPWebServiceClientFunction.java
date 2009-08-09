@@ -56,27 +56,121 @@ public class SAPWebServiceClientFunction implements FunctionProvider {
 	 * @see com.opensymphony.workflow.FunctionProvider#execute(java.util.Map, java.util.Map, com.opensymphony.module.propertyset.PropertySet)
 	 */
 	public void execute(Map transientVars, Map args, PropertySet ps) throws WorkflowException {
+		if(LOG.isDebugEnabled()) {
+			LOG.debug(dumpMap("args", args));
+		}
+		boolean throwExceptions = getArgAsBoolean(args, SAPWebServiceClientFunctionPluginFactory.JIRA_THROW_EX_PARAM);
+
+		SAPClientXmlResponse response = null;
 		try {
-			SAPWSClient client = new SAPWSClient();
-			SAPClientXmlRequest request = new SAPClientXmlRequest();
-			
 			Map<String, Object> context = buildContext(transientVars, args, ps);
 			if(LOG.isDebugEnabled()) {
 				LOG.debug(dumpMap("context", context));
 			}
-			
-			SAPClientXmlResponse response = client.execute(request, context);
-			
-			if(!response.isSuccess()) {
-				
+
+			SAPWSClient client = createWSClient(args);
+
+			if(LOG.isDebugEnabled()) {
+				LOG.debug(client);
+			}
+
+			SAPClientXmlRequest request = new SAPClientXmlRequest(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.REQUEST_TEMPLATE_PARAM));
+
+			if(LOG.isDebugEnabled()) {
+				LOG.debug(request);
 			}
 			
+			response = client.execute(request, context);
+
+			if(LOG.isDebugEnabled()) {
+				LOG.debug(response);
+			}
+			
+			setResponseStatusAndMessage(transientVars, args, response.getNumberAsString(), response.getMessage());
+			setCustomFieldValue(transientVars, getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.JIRA_RESPONSE_FIELD_PARAM), response.getResponse());
 		} catch(Exception ex) {
 			LOG.error("Could not execute web service: " + ex.getMessage(), ex);
-			throw new WorkflowException("Could not execute web service: " + ex.getMessage(), ex);
+			setResponseStatusAndMessage(transientVars, args, "-1", ex.getMessage());
+			if(throwExceptions) {
+				throw new WorkflowException("Could not execute web service: " + ex.getMessage(), ex);
+			}
+		} finally {
+			if(response != null && !response.isSuccess() && throwExceptions) {
+				throw new WorkflowException(response.getMessage() + " (Number: " + response.getNumberAsString() + ")");
+			}
 		}
 	}
 
+	/**
+	 * 
+	 * @param transientVars
+	 * @param args
+	 * @param status
+	 * @param message
+	 */
+	private void setResponseStatusAndMessage(Map transientVars, Map args, String status, String message) {
+		String statusFieldName = getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.JIRA_STATUS_FIELD_PARAM);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Trying to set status field [" + statusFieldName + "] with value [" + status + "]");
+		}
+		setCustomFieldValue(transientVars, statusFieldName, status);
+		
+		String messageFieldName = getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.JIRA_MESSAGE_FIELD_PARAM);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Trying to set message field [" + messageFieldName + "] with value [" + message + "]");
+		}
+		setCustomFieldValue(transientVars, messageFieldName, message);
+	}
+	
+	/**
+	 * 
+	 * @param transientVars
+	 * @param fieldName
+	 * @param fieldValue
+	 */
+	private void setCustomFieldValue(Map transientVars, String fieldName, String fieldValue) {
+		if(fieldName != null) {
+			
+		} else {
+			LOG.info("Cannot set custom field value for a null field name.");
+		}
+	}
+	
+	/**
+	 * 
+	 * @param args
+	 * @return
+	 */
+	private SAPWSClient createWSClient(Map args) {
+		SAPWSClient client = new SAPWSClient();
+		client.setBasicAuthentication(true);
+		client.setUrl(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.WS_URL_PARAM));
+		client.setUsername(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.WS_USERNAME_PARAM));
+		client.setPassword(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.WS_PASSWORD_PARAM));
+		return client;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	private String getArgAsString(Map args, String argName) {
+		if(argName != null && args != null && args.containsKey(argName)) {
+			return args.get(argName).toString();
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	private boolean getArgAsBoolean(Map args, String argName) {
+		String val = getArgAsString(args, argName);
+		return val != null && SAPWebServiceClientFunctionPluginFactory.TRUE_TEXT.equalsIgnoreCase(val);
+	}
+	
 	/**
 	 * 
 	 * @param transientVars
