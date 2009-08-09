@@ -34,6 +34,7 @@ public class SAPWebServiceClientFunctionPluginFactory extends AbstractWorkflowPl
 	public static final String JIRA_STATUS_FIELD_PARAM = "field.statusField";
 	public static final String JIRA_MESSAGE_FIELD_PARAM = "field.messageField";
 	public static final String JIRA_THROW_EX_PARAM = "field.throwException";
+	public static final String TRUE_TEXT = "true";
 	
 	private static final Logger LOG = Logger.getLogger(SAPWebServiceClientFunctionPluginFactory.class);	
 
