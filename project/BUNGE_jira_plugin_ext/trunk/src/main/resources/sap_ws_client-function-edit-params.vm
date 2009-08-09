@@ -1,0 +1,139 @@
+<tr bgcolor=ffffff>
+    <td align="right" valign="top" bgcolor="fffff0">
+        <span class="label">WS URL:</span>
+    </td>
+    <td bgcolor="ffffff" nowrap>
+        <input type="text" name="url" value="$!{url}"/>
+        <br><font size="1">The URL of the Web Service to invoke.</font>
+    </td>
+</tr>
+
+<tr bgcolor=ffffff>
+    <td align="right" valign="top" bgcolor="fffff0">
+        <span class="label">WS Username:</span>
+    </td>
+    <td bgcolor="ffffff" nowrap>
+        <input type="text" name="username" value="$!{username}"/>
+        <br><font size="1">The username with priviliges to invoke the Web Service.</font>
+    </td>
+</tr>
+
+<tr bgcolor=ffffff>
+    <td align="right" valign="top" bgcolor="fffff0">
+        <span class="label">WS Password:</span>
+    </td>
+    <td bgcolor="ffffff" nowrap>
+        <input type="password" name="password" value="$!{password}"/>
+        <br><font size="1">The password for the user with priviliges to invoke the Web Service.</font>
+    </td>
+</tr>
+
+<tr bgcolor=ffffff>
+    <td align="right" valign="top" bgcolor="fffff0">
+        <span class="label">Authentication:</span>
+    </td>
+    <td bgcolor="ffffff" nowrap>
+    	<select name="basicAuthentication" id="basicAuthentication">
+			<option id="true"
+			        #if(${basicAuthentication.equals("true")})
+	                    SELECTED
+	                #end
+			>Basic Authentication</option>
+			<option id="false"
+			        #if(${basicAuthentication.equals("false")})
+	                    SELECTED
+	                #end
+			>WSSE Authentication</option>
+    	</select>
+        <br><font size="1">Whether to use HTTP Basic Authentication or WSSE Authentication.</font>
+    </td>
+</tr>
+
+
+<tr bgcolor=ffffff>
+    <td align="right" valign="top" bgcolor="fffff0">
+        <span class="label">WS Request XML Template:</span>
+    </td>
+    <td bgcolor="ffffff" nowrap>
+    	<textarea name="requestTemplate" cols="25" rows="30">$!{requestTemplate}</textarea>
+        <br><font size="1">The Web Service Request XML template.</font>
+    </td>
+</tr>
+
+<tr bgcolor=ffffff>
+    <td align="right" valign="top" bgcolor="fffff0">
+        <span class="label">Throw Exceptions:</span>
+    </td>
+    <td bgcolor="ffffff" nowrap>
+        	<select name="throwException" id="throwException">
+			<option id="false"
+			        #if(${throwException.equals("false")})
+	                    SELECTED
+	                #end
+			>No</option>
+			<option id="true"
+			        #if(${throwException.equals("false")})
+	                    SELECTED
+	                #end
+			>Yes</option>
+    	</select>
+        <br><font size="1">Whether exceptions inside the Post-Function should be thrown or not.</font>
+    </td>
+</tr>
+
+<tr bgcolor=ffffff>
+    <td align="right" valign="top" bgcolor="fffff0">
+        <span class="label">Response Status Field:</span>
+    </td>
+    <td bgcolor="ffffff" nowrap>
+		<select id="statusField" name="statusField">
+			<option value="">-- None --</option>
+	    	#foreach ($val in $fieldList)
+	        	<option value="${val.id}"
+	                #if(${val.id.equals($statusField.id)})
+	                    SELECTED
+	                #end
+                >${val.name}</option>
+	        #end
+	        </select>    
+        <br><font size="1">Field where the response status should be copied.</font>
+    </td>
+</tr>
+
+<tr bgcolor=ffffff>
+    <td align="right" valign="top" bgcolor="fffff0">
+        <span class="label">Response Message Field:</span>
+    </td>
+    <td bgcolor="ffffff" nowrap>
+		<select id="messageField" name="messageField">
+			<option value="">-- None --</option>
+	    	#foreach ($val in $fieldList)
+	        	<option value="${val.id}"
+	                #if(${val.id.equals($messageField.id)})
+	                    SELECTED
+	                #end
+                >${val.name}</option>
+	        #end
+	        </select>        
+        <br><font size="1">Field where the response message should be copied.</font>
+    </td>
+</tr>
+
+<tr bgcolor=ffffff>
+    <td align="right" valign="top" bgcolor="fffff0">
+        <span class="label">XML Response Field:</span>
+    </td>
+    <td bgcolor="ffffff" nowrap>
+		<select id="responseField" name="responseField">
+			<option value="">-- None --</option>
+	    	#foreach ($val in $fieldList)
+	        	<option value="${val.id}"
+	                #if(${val.id.equals($responseField.id)})
+	                    SELECTED
+	                #end
+                >${val.name}</option>
+	        #end
+	        </select>    
+        <br><font size="1">Field where the XML response message should be copied.</font>
+    </td>
+</tr>
