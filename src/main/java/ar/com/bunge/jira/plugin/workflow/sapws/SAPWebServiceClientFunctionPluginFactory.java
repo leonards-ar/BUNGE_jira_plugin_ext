@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 
 import ar.com.bunge.jira.plugin.workflow.utils.PluginUtils;
 import ar.com.bunge.jira.plugin.workflow.utils.WorkflowUtils;
+import ar.com.bunge.util.Utils;
 
 import com.atlassian.jira.issue.fields.Field;
 import com.atlassian.jira.issue.fields.FieldManager;
@@ -71,12 +72,12 @@ public class SAPWebServiceClientFunctionPluginFactory extends AbstractWorkflowPl
         	LOG.debug("Function descriptor args " + functionDescriptor.getArgs());
         }
         
-        velocityParams.put("requestTemplate", functionDescriptor.getArgs().get(REQUEST_TEMPLATE_PARAM));
+        velocityParams.put("requestTemplate", Utils.decode((String) functionDescriptor.getArgs().get(REQUEST_TEMPLATE_PARAM)));
         velocityParams.put("url", functionDescriptor.getArgs().get(WS_URL_PARAM));
         velocityParams.put("username", functionDescriptor.getArgs().get(WS_USERNAME_PARAM));
         velocityParams.put("password", functionDescriptor.getArgs().get(WS_PASSWORD_PARAM));
         velocityParams.put("basicAuthentication", functionDescriptor.getArgs().get(WS_BASIC_AUTHENTICATION_PARAM));
-        velocityParams.put("responseField", getFieldByName(descriptor, JIRA_THROW_EX_PARAM));
+        velocityParams.put("responseField", getFieldByName(descriptor, JIRA_RESPONSE_FIELD_PARAM));
         velocityParams.put("statusField", getFieldByName(descriptor, JIRA_STATUS_FIELD_PARAM));
         velocityParams.put("messageField", getFieldByName(descriptor, JIRA_MESSAGE_FIELD_PARAM));
         velocityParams.put("throwException", functionDescriptor.getArgs().get(JIRA_THROW_EX_PARAM));		
@@ -138,7 +139,7 @@ public class SAPWebServiceClientFunctionPluginFactory extends AbstractWorkflowPl
 		}		
         Map params = new HashMap();
 
-        addParameterFromConditionParams(REQUEST_TEMPLATE_PARAM, "requestTemplate", params, conditionParams);
+        addParameterFromConditionParams(REQUEST_TEMPLATE_PARAM, "requestTemplate", params, conditionParams, true);
         addParameterFromConditionParams(WS_URL_PARAM, "url", params, conditionParams);
         addParameterFromConditionParams(WS_USERNAME_PARAM, "username", params, conditionParams);
         addParameterFromConditionParams(WS_PASSWORD_PARAM, "password", params, conditionParams);
@@ -159,17 +160,34 @@ public class SAPWebServiceClientFunctionPluginFactory extends AbstractWorkflowPl
 	 * @param conditionParams
 	 */
 	private void addParameterFromConditionParams(String paramFieldName, String conditionParamFieldName, Map params, Map conditionParams) {
+		addParameterFromConditionParams(paramFieldName, conditionParamFieldName, params, conditionParams, false);
+	}
+
+	/**
+	 * 
+	 * @param paramFieldName
+	 * @param conditionParamFieldName
+	 * @param params
+	 * @param conditionParams
+	 * @param encode
+	 */
+	private void addParameterFromConditionParams(String paramFieldName, String conditionParamFieldName, Map params, Map conditionParams, boolean encode) {
 		try {
 			String value = extractSingleParam(conditionParams, conditionParamFieldName);
 	        if(LOG.isDebugEnabled()) {
 	        	LOG.debug("Setting descriptor param [" + paramFieldName + "] with condition param [" + conditionParamFieldName + "] and value [" + value + "]");
 	        }
+	        
+	        if(encode) {
+	        	value = Utils.encode(value);
+	        }
+	        
 	        params.put(paramFieldName, value);
 		} catch(IllegalArgumentException ex) {
 			LOG.warn(ex.getLocalizedMessage(), ex);
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param descriptor
