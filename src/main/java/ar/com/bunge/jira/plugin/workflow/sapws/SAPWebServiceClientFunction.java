@@ -71,7 +71,6 @@ public class SAPWebServiceClientFunction extends AbstractPreserveChangesPostFunc
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Trying to set message field [" + messageFieldName + "] with value [" + message + "]");
 		}
-		
 		setFieldValue(transientVars, messageFieldName, Utils.truncate(message, 255), changeHolder);
 	}
 	
@@ -88,6 +87,7 @@ public class SAPWebServiceClientFunction extends AbstractPreserveChangesPostFunc
 	        try {
 				MutableIssue issue = (MutableIssue) transientVars.get("issue");
 				WorkflowUtils.setFieldValue(issue, fieldKey, fieldValue, changeHolder);
+				issue.store();
 	        } catch(Throwable ex) {
 	        	 LOG.error("Cannot set value [" + fieldValue + "] to field key [" + fieldKey + "]: " + ex, ex);
 	        }
@@ -107,6 +107,7 @@ public class SAPWebServiceClientFunction extends AbstractPreserveChangesPostFunc
 		client.setUrl(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.WS_URL_PARAM));
 		client.setUsername(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.WS_USERNAME_PARAM));
 		client.setPassword(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.WS_PASSWORD_PARAM));
+		
 		return client;
 	}
 	
@@ -299,7 +300,7 @@ public class SAPWebServiceClientFunction extends AbstractPreserveChangesPostFunc
 				LOG.debug(client);
 			}
 
-			SAPClientXmlRequest request = new SAPClientXmlRequest(Utils.decode(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.REQUEST_TEMPLATE_PARAM)));
+			SAPClientXmlRequest request = new SAPClientXmlRequest(getWSRequest(args));
 
 			if(LOG.isDebugEnabled()) {
 				LOG.debug(request);
@@ -324,5 +325,15 @@ public class SAPWebServiceClientFunction extends AbstractPreserveChangesPostFunc
 				throw new WorkflowException(response.getMessage() + " (Number: " + response.getNumberAsString() + ")");
 			}
 		}
+	}
+	
+	/**
+	 * 
+	 * @param args
+	 * @return
+	 */
+	private String getWSRequest(Map<String, String> args) {
+		String request = Utils.decode(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.REQUEST_TEMPLATE_PARAM));
+		return request != null ? request.trim() : null; 
 	}
 }
