@@ -21,6 +21,7 @@ import ar.com.bunge.jira.plugin.workflow.utils.WorkflowUtils;
 import ar.com.bunge.sapws.client.SAPClientXmlRequest;
 import ar.com.bunge.sapws.client.SAPClientXmlResponse;
 import ar.com.bunge.sapws.client.SAPWSClient;
+import ar.com.bunge.util.Utils;
 
 import com.atlassian.jira.ManagerFactory;
 import com.atlassian.jira.issue.Issue;
@@ -64,14 +65,14 @@ public class SAPWebServiceClientFunction extends AbstractPreserveChangesPostFunc
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Trying to set status field [" + statusFieldName + "] with value [" + status + "]");
 		}
-		setFieldValue(transientVars, statusFieldName, (status != null ? status.substring(0, 255) : ""), changeHolder);
+		setFieldValue(transientVars, statusFieldName, Utils.truncate(status, 255), changeHolder);
 		
 		String messageFieldName = getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.JIRA_MESSAGE_FIELD_PARAM);
 		if(LOG.isDebugEnabled()) {
 			LOG.debug("Trying to set message field [" + messageFieldName + "] with value [" + message + "]");
 		}
 		
-		setFieldValue(transientVars, messageFieldName, (message != null ? message.substring(0, 255) : ""), changeHolder);
+		setFieldValue(transientVars, messageFieldName, Utils.truncate(message, 255), changeHolder);
 	}
 	
 	/**
@@ -298,7 +299,7 @@ public class SAPWebServiceClientFunction extends AbstractPreserveChangesPostFunc
 				LOG.debug(client);
 			}
 
-			SAPClientXmlRequest request = new SAPClientXmlRequest(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.REQUEST_TEMPLATE_PARAM));
+			SAPClientXmlRequest request = new SAPClientXmlRequest(Utils.decode(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.REQUEST_TEMPLATE_PARAM)));
 
 			if(LOG.isDebugEnabled()) {
 				LOG.debug(request);
