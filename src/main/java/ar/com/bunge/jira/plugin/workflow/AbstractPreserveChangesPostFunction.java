@@ -21,7 +21,7 @@ import com.opensymphony.workflow.WorkflowException;
 /**
  * Abstract post-function with transparent change tracking.
  * 
- * @author <A href="mailto:abashev at gmail dot com">Alexey Abashev</A>
+ * @author <a href="mailto:abashev@gmail.com">Alexey Abashev</a>
  * @version $Id$
  */
 public abstract class AbstractPreserveChangesPostFunction extends AbstractJiraFunctionProvider {
