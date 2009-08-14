@@ -44,7 +44,11 @@ public class LogUtils {
 				aValue = map.get(aKey);
 				s.append(aKey.getClass().getName() + ":[" + aKey + "]");
 				s.append(" = ");
-				s.append(aValue.getClass().getName() + ":[" + aValue + "]");
+				if(aValue != null) {
+					s.append(aValue.getClass().getName() + ":[" + aValue + "]");
+				} else {
+					s.append("[" + aValue + "]");
+				}
 				if(it.hasNext()) {
 					s.append(",\n\t");
 				}
