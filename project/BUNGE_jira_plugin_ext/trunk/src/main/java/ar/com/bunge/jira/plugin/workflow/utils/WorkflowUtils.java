@@ -56,6 +56,7 @@ import com.opensymphony.workflow.loader.ActionDescriptor;
  * This utils class exposes common methods to custom workflow objects.
  * 
  */
+@SuppressWarnings("unchecked")
 public class WorkflowUtils {
 	public static final String SPLITTER = "@@";
 
@@ -184,6 +185,7 @@ public class WorkflowUtils {
 	 * a List, a Strong, or any FildType within JIRA.
 	 * 
 	 */
+	@SuppressWarnings("deprecation")
 	public static Object getFieldValueFromIssue(Issue issue, Field field) {
 		FieldManager fldManager = ManagerFactory.getFieldManager();
 		Object retVal = null;

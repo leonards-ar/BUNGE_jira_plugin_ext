@@ -225,6 +225,7 @@ public class PluginUtils {
 	 * @return
 	 * @throws FieldLayoutStorageException
 	 */
+	@SuppressWarnings("deprecation")
 	public static FieldLayoutItem getFieldLayoutItem(Issue issue, Field field) throws FieldLayoutStorageException {
 		final FieldLayoutManager fieldLayoutManager = ComponentManager.getInstance().getFieldLayoutManager();
 

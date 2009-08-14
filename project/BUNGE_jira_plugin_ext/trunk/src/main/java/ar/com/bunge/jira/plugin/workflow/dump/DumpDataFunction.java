@@ -14,6 +14,8 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.ofbiz.core.entity.GenericValue;
 
+import ar.com.bunge.jira.plugin.workflow.utils.LogUtils;
+
 import com.atlassian.jira.ManagerFactory;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.fields.CustomField;
@@ -26,7 +28,7 @@ import com.opensymphony.workflow.WorkflowException;
  *
  * @author <a href="mcapurro@gmail.com">Mariano Capurro</a>
  * @version 1.0
- * @since SPM 1.0
+ * @since 1.0
  *
  */
 @SuppressWarnings("unchecked")
@@ -66,9 +68,9 @@ public class DumpDataFunction implements FunctionProvider {
     		dumpFileStream.write( ("*** Starting new Dump [" + new Date() + "] ***\n\n").getBytes() );
     		
     		if(LOG.isDebugEnabled()) {
-        		LOG.debug(dumpMap("transientVars", transientVars));
+        		LOG.debug(LogUtils.dumpMap("transientVars", transientVars));
     		}
-    		dumpFileStream.write(dumpMap("transientVars", transientVars).getBytes());
+    		dumpFileStream.write(LogUtils.dumpMap("transientVars", transientVars).getBytes());
     		dumpFileStream.write("\n".getBytes());
 
     		if(LOG.isDebugEnabled()) {
@@ -78,9 +80,9 @@ public class DumpDataFunction implements FunctionProvider {
     		dumpFileStream.write("\n".getBytes());
     		
     		if(LOG.isDebugEnabled()) {
-        		LOG.debug(dumpMap("args", args));
+        		LOG.debug(LogUtils.dumpMap("args", args));
     		}    		
-    		dumpFileStream.write(dumpMap("args", args).getBytes());
+    		dumpFileStream.write(LogUtils.dumpMap("args", args).getBytes());
     		dumpFileStream.write( "\n".getBytes() );
     		
     		if(LOG.isDebugEnabled()) {
@@ -139,7 +141,11 @@ public class DumpDataFunction implements FunctionProvider {
 			s.append("]");
 			
 			Project p = io.getProjectObject();
-			
+			if(p != null) {
+				s.append("\nProject: [");
+				s.append(p.getName());
+				s.append("]");
+			}
 		} else if(issue instanceof GenericValue) {
 			i = (GenericValue) issue;
 		} else if(issue == null) {
@@ -171,35 +177,6 @@ public class DumpDataFunction implements FunctionProvider {
 		return s.toString();
 	}
 		
-	/**
-	 * 
-	 * @param description
-	 * @param map
-	 * @return
-	 */
-	private String dumpMap(String description, Map map) {
-		if(map != null && map.size() > 0) {
-			Object aKey, aValue;
-			StringBuffer s = new StringBuffer(description + ": {");
-			for(Iterator it = map.keySet().iterator(); it.hasNext(); ) {
-				aKey = it.next();
-				aValue = map.get(aKey);
-				s.append(aKey.getClass().getName() + ":[" + aKey + "]");
-				s.append(" = ");
-				s.append(aValue.getClass().getName() + ":[" + aValue + "]");
-				if(it.hasNext()) {
-					s.append(",\n\t");
-				}
-			}
-			s.append("}");
-			return s.toString();
-		} else if(map != null && map.size() <= 0) {
-			return description + ": Empty map";
-		} else {
-			return description + ": Null map";
-		}		
-	}
-	
 	/**
 	 * 
 	 * @param description
