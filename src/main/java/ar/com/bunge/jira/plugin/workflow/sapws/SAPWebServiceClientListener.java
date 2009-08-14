@@ -5,6 +5,7 @@
  */
 package ar.com.bunge.jira.plugin.workflow.sapws;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -16,11 +17,14 @@ import ar.com.bunge.sapws.client.SAPClientXmlResponse;
 import ar.com.bunge.sapws.client.SAPWSClient;
 import ar.com.bunge.util.Utils;
 
+import com.atlassian.jira.ManagerFactory;
 import com.atlassian.jira.event.issue.AbstractIssueEventListener;
 import com.atlassian.jira.event.issue.IssueEvent;
 import com.atlassian.jira.event.issue.IssueEventListener;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.MutableIssue;
+import com.atlassian.jira.issue.fields.Field;
+import com.atlassian.jira.issue.fields.FieldManager;
 import com.atlassian.jira.issue.util.DefaultIssueChangeHolder;
 import com.atlassian.jira.issue.util.IssueChangeHolder;
 
@@ -116,6 +120,7 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 	 */
 	private void handleEvent(IssueEvent event) {
 		SAPClientXmlResponse response = null;
+		IssueChangeHolder holder = new DefaultIssueChangeHolder();
 		
 		try {
 			Map<String, Object> context = IssueUtils.buildContext(event.getIssue());
@@ -129,12 +134,12 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 			if(LOG.isDebugEnabled()) {
 				LOG.debug(response);
 			}
-			IssueChangeHolder holder = new DefaultIssueChangeHolder();
 			
 			setResponseStatusAndMessage(event.getIssue(), response.getNumberAsString(), response.getMessage(), holder);
 			setFieldValue(event.getIssue(), getResponseFieldName(), response.getResponse(), holder);
 		} catch(Throwable ex) {
-			
+			LOG.error("Cannot handle event [" + event.getEventTypeId() + "] -> " + ex.getLocalizedMessage(), ex);
+			setResponseStatusAndMessage(event.getIssue(), "-2", ex.getLocalizedMessage(), holder);
 		}
 		
 	}
@@ -161,27 +166,54 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 	/**
 	 * 
 	 * @param issue
-	 * @param fieldKey
+	 * @param fieldName
 	 * @param fieldValue
 	 * @param changeHolder
 	 */
-	private void setFieldValue(Issue issue, String fieldKey, String fieldValue, IssueChangeHolder changeHolder) {
-		
-		if(fieldKey != null && issue instanceof MutableIssue) {
+	private void setFieldValue(Issue issue, String fieldName, String fieldValue, IssueChangeHolder changeHolder) {
+		if(fieldName != null && issue instanceof MutableIssue) {
 	        try {
-				WorkflowUtils.setFieldValue((MutableIssue) issue, fieldKey, fieldValue, changeHolder);
+				WorkflowUtils.setFieldValue((MutableIssue) issue, getFieldKeyFromName(fieldName), fieldValue, changeHolder);
 				issue.store();
 	        } catch(Throwable ex) {
-	        	 LOG.error("Cannot set value [" + fieldValue + "] to field key [" + fieldKey + "]: " + ex, ex);
+	        	 LOG.error("Cannot set value [" + fieldValue + "] to field name [" + fieldName + "]: " + ex, ex);
 	        }
 		} else {
-			if(fieldKey != null) {
+			if(fieldName != null) {
 				LOG.info("Cannot set custom field value for a null field name.");
 			} else {
 				LOG.warn("Issue is not mutable");
 			}
-		}
+		}			
 	}	
+	
+	/**
+	 * 
+	 * @param name
+	 * @return
+	 */
+	private String getFieldKeyFromName(String name) {
+
+		if(name != null) {
+			try {
+				FieldManager fieldManager = ManagerFactory.getFieldManager();
+				
+				for (Iterator it = fieldManager.getAllAvailableNavigableFields().iterator(); it.hasNext(); ) {
+					Field f = (Field) it.next();
+					if(name.equals(f.getName())) {
+						LOG.debug("Found field for name [" + name + "] with key [" + f.getId() + "]");
+						return f.getId();
+					}
+				}
+			} catch(Throwable ex) {
+				LOG.error("Cannot search field key for field name [" + name + "] -> " + ex.getLocalizedMessage(), ex);
+			}
+		}
+		
+		LOG.debug("No field found with name [" + name + "]");
+		
+		return null;
+	}		
 	/**
 	 * @param event
 	 * @see com.atlassian.jira.event.issue.AbstractIssueEventListener#customEvent(com.atlassian.jira.event.issue.IssueEvent)
