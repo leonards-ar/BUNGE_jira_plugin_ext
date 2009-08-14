@@ -20,7 +20,7 @@ import com.opensymphony.workflow.loader.FunctionDescriptor;
  *
  * @author <a href="mcapurro@gmail.com">Mariano Capurro</a>
  * @version 1.0
- * @since SPM 1.0
+ * @since 1.0
  *
  */
 @SuppressWarnings("unchecked")
