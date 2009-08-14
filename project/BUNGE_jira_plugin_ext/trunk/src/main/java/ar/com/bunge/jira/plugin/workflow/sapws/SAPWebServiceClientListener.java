@@ -129,7 +129,6 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 			if(LOG.isDebugEnabled()) {
 				LOG.debug(response);
 			}
-			
 			IssueChangeHolder holder = new DefaultIssueChangeHolder();
 			
 			setResponseStatusAndMessage(event.getIssue(), response.getNumberAsString(), response.getMessage(), holder);
