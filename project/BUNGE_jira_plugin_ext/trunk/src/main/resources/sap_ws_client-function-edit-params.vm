@@ -3,7 +3,7 @@
         <span class="label">WS URL:</span>
     </td>
     <td bgcolor="ffffff" nowrap>
-        <input type="text" name="url" value="$!{url}"/>
+        <input type="text" name="url" value="$!{url}" size="50"/>
         <br><font size="1">The URL of the Web Service to invoke.</font>
     </td>
 </tr>
@@ -55,7 +55,7 @@
         <span class="label">WS Request XML Template:</span>
     </td>
     <td bgcolor="ffffff" nowrap>
-    	<textarea name="requestTemplate" cols="25" rows="30">$!{requestTemplate}</textarea>
+    	<textarea name="requestTemplate" cols="25" rows="20">$!{requestTemplate}</textarea>
         <br><font size="1">The Web Service Request XML template.</font>
     </td>
 </tr>
