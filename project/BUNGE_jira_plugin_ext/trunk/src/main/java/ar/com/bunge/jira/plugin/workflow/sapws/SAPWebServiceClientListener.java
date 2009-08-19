@@ -5,8 +5,13 @@
  */
 package ar.com.bunge.jira.plugin.workflow.sapws;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 
@@ -17,6 +22,7 @@ import ar.com.bunge.sapws.client.SAPClientXmlResponse;
 import ar.com.bunge.sapws.client.SAPWSClient;
 import ar.com.bunge.util.Utils;
 
+import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.ManagerFactory;
 import com.atlassian.jira.event.issue.AbstractIssueEventListener;
 import com.atlassian.jira.event.issue.IssueEvent;
@@ -46,11 +52,14 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 	private static final String RESPONSE_STATUS_PARAM = "Response Status Field Name";
 	private static final String RESPONSE_MESSAGE_PARAM = "Response Message Field Name";
 	private static final String RESPONSE_XML_PARAM = "Response XML Field Name";
+	private static final String ENABLED_EVENTS = "Enabled Events";
 	
 	private String statusFieldName = null;
 	private String messageFieldName = null;
 	private String responseFieldName = null;
-
+	private List<String> events = new ArrayList<String>();
+	private Map<Long, String> availableEvents = null;
+	
 	private final SAPWSClient client = new SAPWSClient();
 	
 	/**
@@ -64,7 +73,7 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 	 * @see com.atlassian.jira.event.issue.AbstractIssueEventListener#getAcceptedParams()
 	 */
 	public String[] getAcceptedParams() {
-		return new String[] {URL_PARAM, USERNAME_PARAM, PASSWORD_PARAM, REQUEST_TEMPLATE_PATH_PARAM, RESPONSE_STATUS_PARAM, RESPONSE_MESSAGE_PARAM, RESPONSE_XML_PARAM};
+		return new String[] {URL_PARAM, USERNAME_PARAM, PASSWORD_PARAM, REQUEST_TEMPLATE_PATH_PARAM, RESPONSE_STATUS_PARAM, RESPONSE_MESSAGE_PARAM, RESPONSE_XML_PARAM, ENABLED_EVENTS};
 	}
 
 	/**
@@ -72,7 +81,7 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 	 * @see com.atlassian.jira.event.issue.AbstractIssueEventListener#getDescription()
 	 */
 	public String getDescription() {
-		return "Invokes a Web Service published on URL " + getClient().getUrl();
+		return "Invokes a Web Service published on URL " + getClient().getUrl() + " for events " + getEvents();
 	}
 
 	/**
@@ -94,12 +103,14 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 			setStatusFieldName((String) params.get(RESPONSE_STATUS_PARAM));
 			setMessageFieldName((String) params.get(RESPONSE_MESSAGE_PARAM));
 			setResponseFieldName((String) params.get(RESPONSE_XML_PARAM));
-
+			parseEnabledEvents((String) params.get(ENABLED_EVENTS));
+			
 			if(LOG.isDebugEnabled()) {
 				LOG.debug(getClient().toString());
 				LOG.debug("Writing response status to issue field [" + getStatusFieldName() + "]");
 				LOG.debug("Writing response message to issue field [" + getMessageFieldName() + "]");
 				LOG.debug("Writing response XML to issue field [" + getResponseFieldName() + "]");
+				LOG.debug("Enabled Events " + getEvents());
 			}
 
 		} else {
@@ -107,6 +118,47 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 		}
 	}
 
+	/**
+	 * 
+	 * @param events
+	 * @return
+	 */
+	private void parseEnabledEvents(String events) {
+		if(events != null && events.trim().length() > 0) {
+			StringTokenizer st = new StringTokenizer(events, ",;:");
+			String anEvent;
+			while(st.hasMoreTokens()) {
+				anEvent = st.nextToken();
+				if(anEvent != null) {
+					if(LOG.isDebugEnabled()) {
+						LOG.debug("Adding [" + anEvent + "] to enabled events list");
+					}
+					getEvents().add(anEvent.trim().toLowerCase());
+				}
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @param eventName
+	 * @return
+	 */
+	private boolean processEvent(String eventName) {
+		if(eventName != null && eventName.trim().length() > 0 ) {
+			boolean process = getEvents().contains(eventName.trim().toLowerCase());
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("Event name [" + eventName + "] is " + (process ? "" : "not ") + "present in enabled events list " + getEvents());
+			}
+			return process;
+		} else {
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("Event name is null or empty. Not processing event");
+			}
+			return false;
+		}
+	}
+	
 	/**
 	 * @return the client
 	 */
@@ -117,31 +169,48 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 	/**
 	 * 
 	 * @param event
+	 * @param eventName
 	 */
 	private void handleEvent(IssueEvent event) {
 		SAPClientXmlResponse response = null;
-		IssueChangeHolder holder = new DefaultIssueChangeHolder();
-		
-		try {
-			Map<String, Object> context = IssueUtils.buildContext(event.getIssue());
-			
-			if(LOG.isDebugEnabled()) {
-				LOG.debug(LogUtils.dumpMap("context", context));
-			}
 
-			response = getClient().execute(context);
-
-			if(LOG.isDebugEnabled()) {
-				LOG.debug(response);
-			}
-			
-			setResponseStatusAndMessage(event.getIssue(), response.getNumberAsString(), response.getMessage(), holder);
-			setFieldValue(event.getIssue(), getResponseFieldName(), response.getResponse(), holder);
-		} catch(Throwable ex) {
-			LOG.error("Cannot handle event [" + event.getEventTypeId() + "] -> " + ex.getLocalizedMessage(), ex);
-			setResponseStatusAndMessage(event.getIssue(), "-2", ex.getLocalizedMessage(), holder);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("About to search event name for event type id [" + event.getEventTypeId() + "] in available events " + getAvailableEvents());
 		}
 		
+		String eventName = getAvailableEvents().get(event.getEventTypeId());
+
+		if(LOG.isDebugEnabled()) {
+			LOG.debug("Found event name [" + eventName + "] for event type id [" + event.getEventTypeId() + "]");
+		}
+		
+		if(processEvent(eventName)) {
+			IssueChangeHolder holder = new DefaultIssueChangeHolder();
+			
+			try {
+				Map<String, Object> context = IssueUtils.buildContext(event.getIssue());
+				
+				if(LOG.isDebugEnabled()) {
+					LOG.debug(LogUtils.dumpMap("context", context));
+				}
+
+				response = getClient().execute(context);
+
+				if(LOG.isDebugEnabled()) {
+					LOG.debug(response);
+				}
+				
+				setResponseStatusAndMessage(event.getIssue(), response.getNumberAsString(), response.getMessage(), holder);
+				setFieldValue(event.getIssue(), getResponseFieldName(), response.getResponse(), holder);
+			} catch(Throwable ex) {
+				LOG.error("Cannot handle event [" + event.getEventTypeId() + "] -> " + ex.getLocalizedMessage(), ex);
+				setResponseStatusAndMessage(event.getIssue(), "-2", ex.getLocalizedMessage(), holder);
+			}			
+		} else {
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("Event [" + eventName + "] is not configured to be handled");
+			}
+		}			
 	}
 	
 	/**
@@ -465,5 +534,53 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 	 */
 	protected void setResponseFieldName(String responseFieldName) {
 		this.responseFieldName = responseFieldName;
+	}
+
+	/**
+	 * @return the events
+	 */
+	protected List<String> getEvents() {
+		return events;
+	}
+
+	/**
+	 * @param events the events to set
+	 */
+	protected void setEvents(List<String> events) {
+		this.events = events;
+	}
+
+	/**
+	 * @return the availableEvents
+	 */
+	protected Map<Long, String> getAvailableEvents() {
+		if(availableEvents == null) {
+			Collection<Long> eventTypes = ComponentManager.getInstance().getEventTypeManager().getEventTypes();
+			if(eventTypes != null) {
+				if(LOG.isDebugEnabled()) {
+					LOG.debug("Found available event types [" + eventTypes + "]");
+				}
+				setAvailableEvents(new HashMap<Long, String>(eventTypes.size()));
+				String eventName;
+				Long eventTypeId;
+				for(Iterator<Long> it = eventTypes.iterator(); it.hasNext(); ) {
+					eventTypeId = it.next();
+					eventName = ComponentManager.getInstance().getEventTypeManager().getEventType(eventTypeId).getName();
+					if(LOG.isDebugEnabled()) {
+						LOG.debug("Found event name [" + eventName + "] for event type id [" + eventTypeId + "]");
+					}
+					availableEvents.put(eventTypeId, eventName);
+				}
+			}
+			
+		}
+		return availableEvents;
+	}
+
+	/**
+	 * @param availableEvents the availableEvents to set
+	 */
+	protected void setAvailableEvents(Map<Long, String> availableEvents) {
+		this.availableEvents = availableEvents;
 	}
 }
