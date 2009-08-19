@@ -27,6 +27,7 @@ import com.atlassian.jira.ManagerFactory;
 import com.atlassian.jira.event.issue.AbstractIssueEventListener;
 import com.atlassian.jira.event.issue.IssueEvent;
 import com.atlassian.jira.event.issue.IssueEventListener;
+import com.atlassian.jira.event.type.EventType;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.issue.fields.Field;
@@ -81,7 +82,7 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 	 * @see com.atlassian.jira.event.issue.AbstractIssueEventListener#getDescription()
 	 */
 	public String getDescription() {
-		return "Invokes a Web Service published on URL " + getClient().getUrl() + " for events " + getEvents();
+		return "Invokes a Web Service published on the configured URL for the given events";
 	}
 
 	/**
@@ -555,21 +556,19 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 	 */
 	protected Map<Long, String> getAvailableEvents() {
 		if(availableEvents == null) {
-			Collection<Long> eventTypes = ComponentManager.getInstance().getEventTypeManager().getEventTypes();
+			Collection<EventType> eventTypes = ComponentManager.getInstance().getEventTypeManager().getEventTypes();
 			if(eventTypes != null) {
 				if(LOG.isDebugEnabled()) {
 					LOG.debug("Found available event types [" + eventTypes + "]");
 				}
 				setAvailableEvents(new HashMap<Long, String>(eventTypes.size()));
-				String eventName;
-				Long eventTypeId;
-				for(Iterator<Long> it = eventTypes.iterator(); it.hasNext(); ) {
-					eventTypeId = it.next();
-					eventName = ComponentManager.getInstance().getEventTypeManager().getEventType(eventTypeId).getName();
+				EventType eventType;
+				for(Iterator<EventType> it = eventTypes.iterator(); it.hasNext(); ) {
+					eventType = it.next();
 					if(LOG.isDebugEnabled()) {
-						LOG.debug("Found event name [" + eventName + "] for event type id [" + eventTypeId + "]");
+						LOG.debug("Found event name [" + eventType.getName() + "] for event type id [" + eventType.getId() + "]");
 					}
-					availableEvents.put(eventTypeId, eventName);
+					availableEvents.put(eventType.getId(), eventType.getName());
 				}
 			}
 			
