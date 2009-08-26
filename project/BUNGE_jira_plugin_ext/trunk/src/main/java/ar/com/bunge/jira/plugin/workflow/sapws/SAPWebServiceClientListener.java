@@ -54,11 +54,13 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 	private static final String RESPONSE_MESSAGE_PARAM = "Response Message Field Name";
 	private static final String RESPONSE_XML_PARAM = "Response XML Field Name";
 	private static final String ENABLED_EVENTS = "Enabled Events";
+	private static final String ENABLED_PROJECTS = "Enabled Projects";
 	
 	private String statusFieldName = null;
 	private String messageFieldName = null;
 	private String responseFieldName = null;
 	private List<String> events = new ArrayList<String>();
+	private List<String> projects = new ArrayList<String>();
 	private Map<Long, String> availableEvents = null;
 	
 	private final SAPWSClient client = new SAPWSClient();
@@ -74,7 +76,7 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 	 * @see com.atlassian.jira.event.issue.AbstractIssueEventListener#getAcceptedParams()
 	 */
 	public String[] getAcceptedParams() {
-		return new String[] {URL_PARAM, USERNAME_PARAM, PASSWORD_PARAM, REQUEST_TEMPLATE_PATH_PARAM, RESPONSE_STATUS_PARAM, RESPONSE_MESSAGE_PARAM, RESPONSE_XML_PARAM, ENABLED_EVENTS};
+		return new String[] {URL_PARAM, USERNAME_PARAM, PASSWORD_PARAM, REQUEST_TEMPLATE_PATH_PARAM, RESPONSE_STATUS_PARAM, RESPONSE_MESSAGE_PARAM, RESPONSE_XML_PARAM, ENABLED_EVENTS, ENABLED_PROJECTS};
 	}
 
 	/**
@@ -105,6 +107,7 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 			setMessageFieldName((String) params.get(RESPONSE_MESSAGE_PARAM));
 			setResponseFieldName((String) params.get(RESPONSE_XML_PARAM));
 			parseEnabledEvents((String) params.get(ENABLED_EVENTS));
+			parseEnabledProjects((String) params.get(ENABLED_PROJECTS));
 			
 			if(LOG.isDebugEnabled()) {
 				LOG.debug(getClient().toString());
@@ -112,6 +115,7 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 				LOG.debug("Writing response message to issue field [" + getMessageFieldName() + "]");
 				LOG.debug("Writing response XML to issue field [" + getResponseFieldName() + "]");
 				LOG.debug("Enabled Events " + getEvents());
+				LOG.debug("Enabled Projects " + getProjects() + (getProjects().size() > 0 ? " All projects will be processed." : ""));
 			}
 
 		} else {
@@ -135,6 +139,27 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 						LOG.debug("Adding [" + anEvent + "] to enabled events list");
 					}
 					getEvents().add(anEvent.trim().toLowerCase());
+				}
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @param events
+	 * @return
+	 */
+	private void parseEnabledProjects(String projects) {
+		if(projects != null && projects.trim().length() > 0) {
+			StringTokenizer st = new StringTokenizer(projects, ",;:");
+			String aProject;
+			while(st.hasMoreTokens()) {
+				aProject = st.nextToken();
+				if(aProject != null) {
+					if(LOG.isDebugEnabled()) {
+						LOG.debug("Adding [" + aProject + "] to enabled projects list");
+					}
+					getProjects().add(aProject.trim().toLowerCase());
 				}
 			}
 		}
@@ -174,44 +199,56 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 	 */
 	private void handleEvent(IssueEvent event) {
 		SAPClientXmlResponse response = null;
-
+		String project = event.getIssue().getProjectObject().getName();
+		
 		if(LOG.isDebugEnabled()) {
-			LOG.debug("About to search event name for event type id [" + event.getEventTypeId() + "] in available events " + getAvailableEvents());
+			LOG.debug("About to check if project [" + project + "] is enabled");
 		}
 		
-		String eventName = getAvailableEvents().get(event.getEventTypeId());
-
-		if(LOG.isDebugEnabled()) {
-			LOG.debug("Found event name [" + eventName + "] for event type id [" + event.getEventTypeId() + "]");
-		}
-		
-		if(processEvent(eventName)) {
-			IssueChangeHolder holder = new DefaultIssueChangeHolder();
-			
-			try {
-				Map<String, Object> context = IssueUtils.buildContext(event.getIssue());
-				
-				if(LOG.isDebugEnabled()) {
-					LOG.debug(LogUtils.dumpMap("context", context));
-				}
-
-				response = getClient().execute(context);
-
-				if(LOG.isDebugEnabled()) {
-					LOG.debug(response);
-				}
-				
-				setResponseStatusAndMessage(event.getIssue(), response.getNumberAsString(), response.getMessage(), holder);
-				setFieldValue(event.getIssue(), getResponseFieldName(), response.getResponse(), holder);
-			} catch(Throwable ex) {
-				LOG.error("Cannot handle event [" + event.getEventTypeId() + "] -> " + ex.getLocalizedMessage(), ex);
-				setResponseStatusAndMessage(event.getIssue(), "-2", ex.getLocalizedMessage(), holder);
-			}			
-		} else {
+		if(getProjects() == null || getProjects().size() <= 0 || getProjects().contains(project.toLowerCase())) {
 			if(LOG.isDebugEnabled()) {
-				LOG.debug("Event [" + eventName + "] is not configured to be handled");
+				LOG.debug("Project [" + project + "] is enabled");
+				LOG.debug("About to search event name for event type id [" + event.getEventTypeId() + "] in available events " + getAvailableEvents());
 			}
-		}			
+			
+			String eventName = getAvailableEvents().get(event.getEventTypeId());
+
+			if(LOG.isDebugEnabled()) {
+				LOG.debug("Found event name [" + eventName + "] for event type id [" + event.getEventTypeId() + "]");
+			}
+			
+			if(processEvent(eventName)) {
+				IssueChangeHolder holder = new DefaultIssueChangeHolder();
+				
+				try {
+					Map<String, Object> context = IssueUtils.buildContext(event.getIssue());
+					
+					if(LOG.isDebugEnabled()) {
+						LOG.debug(LogUtils.dumpMap("context", context));
+					}
+
+					response = getClient().execute(context);
+
+					if(LOG.isDebugEnabled()) {
+						LOG.debug(response);
+					}
+					
+					setResponseStatusAndMessage(event.getIssue(), response.getNumberAsString(), response.getMessage(), holder);
+					setFieldValue(event.getIssue(), getResponseFieldName(), response.getResponse(), holder);
+				} catch(Throwable ex) {
+					LOG.error("Cannot handle event [" + event.getEventTypeId() + "] -> " + ex.getLocalizedMessage(), ex);
+					setResponseStatusAndMessage(event.getIssue(), "-2", ex.getLocalizedMessage(), holder);
+				}			
+			} else {
+				if(LOG.isInfoEnabled()) {
+					LOG.info("Event [" + eventName + "] is not configured to be handled");
+				}
+			}				
+		} else {
+			if(LOG.isInfoEnabled()) {
+				LOG.info("Project [" + project + "] is not configured to be handled");
+			}
+		}
 	}
 	
 	/**
@@ -581,5 +618,12 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 	 */
 	protected void setAvailableEvents(Map<Long, String> availableEvents) {
 		this.availableEvents = availableEvents;
+	}
+
+	/**
+	 * @return the projects
+	 */
+	protected List<String> getProjects() {
+		return projects;
 	}
 }
