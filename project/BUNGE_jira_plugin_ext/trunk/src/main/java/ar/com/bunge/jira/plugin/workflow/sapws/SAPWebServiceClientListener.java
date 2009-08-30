@@ -237,7 +237,7 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 					setFieldValue(event.getIssue(), getResponseFieldName(), response.getResponse(), holder);
 				} catch(Throwable ex) {
 					LOG.error("Cannot handle event [" + event.getEventTypeId() + "] -> " + ex.getLocalizedMessage(), ex);
-					setResponseStatusAndMessage(event.getIssue(), "-2", ex.getLocalizedMessage(), holder);
+					setResponseStatusAndMessage(event.getIssue(), "-1", ex.getLocalizedMessage(), holder);
 				}			
 			} else {
 				if(LOG.isInfoEnabled()) {

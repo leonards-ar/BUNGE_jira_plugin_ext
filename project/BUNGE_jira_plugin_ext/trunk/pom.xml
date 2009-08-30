@@ -135,19 +135,6 @@
 		</dependency>
 	</dependencies>
 	
-	<servers>
-		 <server>
-		   <id>atlassian-contrib</id>
-		   <username>yourusername</username>
-		   <password>yourpassword</password>
-		</server>
-		<server>
-		   <id>atlassian-contrib-snapshot</id>
-		   <username>yourusername</username>
-		   <password>yourpassword</password>
-		</server>	
-	</servers>
-	
 	<profiles>
 		<profile>
 		   <id>jnolen-devnet-profile</id>
