@@ -36,6 +36,7 @@ public class SAPWebServiceClientFunctionPluginFactory extends AbstractWorkflowPl
 	public static final String WS_URL_PARAM = "field.url";
 	public static final String WS_USERNAME_PARAM = "field.username";
 	public static final String WS_PASSWORD_PARAM = "field.password";
+	public static final String WS_REQUEST_TEMPLATE_FILE_PARAM = "field.requestTemplateFile";
 	public static final String WS_BASIC_AUTHENTICATION_PARAM = "field.basicAuthentication";
 	public static final String JIRA_RESPONSE_FIELD_PARAM = "field.responseField";
 	public static final String JIRA_STATUS_FIELD_PARAM = "field.statusField";
@@ -73,6 +74,7 @@ public class SAPWebServiceClientFunctionPluginFactory extends AbstractWorkflowPl
         }
         
         velocityParams.put("requestTemplate", Utils.decode((String) functionDescriptor.getArgs().get(REQUEST_TEMPLATE_PARAM)));
+        velocityParams.put("requestTemplateFile", functionDescriptor.getArgs().get(WS_REQUEST_TEMPLATE_FILE_PARAM));
         velocityParams.put("url", functionDescriptor.getArgs().get(WS_URL_PARAM));
         velocityParams.put("username", functionDescriptor.getArgs().get(WS_USERNAME_PARAM));
         velocityParams.put("password", functionDescriptor.getArgs().get(WS_PASSWORD_PARAM));
@@ -140,6 +142,7 @@ public class SAPWebServiceClientFunctionPluginFactory extends AbstractWorkflowPl
         Map params = new HashMap();
 
         addParameterFromConditionParams(REQUEST_TEMPLATE_PARAM, "requestTemplate", params, conditionParams, true);
+        addParameterFromConditionParams(WS_REQUEST_TEMPLATE_FILE_PARAM, "requestTemplateFile", params, conditionParams);
         addParameterFromConditionParams(WS_URL_PARAM, "url", params, conditionParams);
         addParameterFromConditionParams(WS_USERNAME_PARAM, "username", params, conditionParams);
         addParameterFromConditionParams(WS_PASSWORD_PARAM, "password", params, conditionParams);
