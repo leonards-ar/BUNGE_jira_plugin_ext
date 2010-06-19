@@ -18,7 +18,7 @@ import org.apache.log4j.Logger;
 import ar.com.bunge.jira.plugin.workflow.utils.IssueUtils;
 import ar.com.bunge.jira.plugin.workflow.utils.LogUtils;
 import ar.com.bunge.jira.plugin.workflow.utils.WorkflowUtils;
-import ar.com.bunge.sapws.client.SAPClientXmlResponse;
+import ar.com.bunge.sapws.client.ClientXmlResponse;
 import ar.com.bunge.sapws.client.SAPWSClient;
 import ar.com.bunge.util.Utils;
 
@@ -198,7 +198,7 @@ public class SAPWebServiceClientListener extends AbstractIssueEventListener impl
 	 * @param eventName
 	 */
 	private void handleEvent(IssueEvent event) {
-		SAPClientXmlResponse response = null;
+		ClientXmlResponse response = null;
 		String project = event.getIssue().getProjectObject().getName();
 		
 		if(LOG.isDebugEnabled()) {

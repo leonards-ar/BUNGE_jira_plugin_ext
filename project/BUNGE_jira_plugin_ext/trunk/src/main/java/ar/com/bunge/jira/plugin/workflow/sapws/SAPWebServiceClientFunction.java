@@ -7,14 +7,15 @@ package ar.com.bunge.jira.plugin.workflow.sapws;
 
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import ar.com.bunge.jira.plugin.workflow.AbstractPreserveChangesPostFunction;
 import ar.com.bunge.jira.plugin.workflow.utils.IssueUtils;
 import ar.com.bunge.jira.plugin.workflow.utils.LogUtils;
 import ar.com.bunge.jira.plugin.workflow.utils.WorkflowUtils;
-import ar.com.bunge.sapws.client.SAPClientXmlRequest;
-import ar.com.bunge.sapws.client.SAPClientXmlResponse;
+import ar.com.bunge.sapws.client.ClientXmlRequest;
+import ar.com.bunge.sapws.client.ClientXmlResponse;
 import ar.com.bunge.sapws.client.SAPWSClient;
 import ar.com.bunge.util.Utils;
 
@@ -95,7 +96,7 @@ public class SAPWebServiceClientFunction extends AbstractPreserveChangesPostFunc
 		client.setUrl(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.WS_URL_PARAM));
 		client.setUsername(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.WS_USERNAME_PARAM));
 		client.setPassword(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.WS_PASSWORD_PARAM));
-		
+		client.setRequestTemplateFile(getArgAsString(args, SAPWebServiceClientFunctionPluginFactory.WS_REQUEST_TEMPLATE_FILE_PARAM));
 		return client;
 	}
 	
@@ -135,7 +136,7 @@ public class SAPWebServiceClientFunction extends AbstractPreserveChangesPostFunc
 		}
 		boolean throwExceptions = getArgAsBoolean(args, SAPWebServiceClientFunctionPluginFactory.JIRA_THROW_EX_PARAM);
 
-		SAPClientXmlResponse response = null;
+		ClientXmlResponse response = null;
 		try {
 			Map<String, Object> context = IssueUtils.buildContext(transientVars, args, ps);
 			if(LOG.isDebugEnabled()) {
@@ -148,13 +149,20 @@ public class SAPWebServiceClientFunction extends AbstractPreserveChangesPostFunc
 				LOG.debug(client);
 			}
 
-			SAPClientXmlRequest request = new SAPClientXmlRequest(getWSRequest(args));
+			if(StringUtils.isEmpty(client.getRequestTemplateFile())) {
+				LOG.info("Request Template File is empty. Using Request Template XML field.");
+				
+				ClientXmlRequest request = new ClientXmlRequest(getWSRequest(args));
 
-			if(LOG.isDebugEnabled()) {
-				LOG.debug(request);
+				if(LOG.isDebugEnabled()) {
+					LOG.debug(request);
+				}
+				
+				response = client.execute(request, context);
+			} else {
+				LOG.info("Request Template File is present. Using Request Template XML from file [" + client.getRequestTemplateFile() + "].");
+				response = client.execute(context);
 			}
-			
-			response = client.execute(request, context);
 
 			if(LOG.isDebugEnabled()) {
 				LOG.debug(response);
